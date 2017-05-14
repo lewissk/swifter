@@ -9,6 +9,7 @@ import Foundation
 
 
 public func websocket(
+ _ onConnect: ((WebSocketSession, String) -> Void)?,
       _ text: ((WebSocketSession, String) -> Void)?,
     _ binary: ((WebSocketSession, [UInt8]) -> Void)?) -> ((HttpRequest) -> HttpResponse) {
     return { r in
@@ -23,6 +24,11 @@ public func websocket(
         }
         let protocolSessionClosure: ((Socket) -> Void) = { socket in
             let session = WebSocketSession(socket)
+            
+            if let handleOnConnect = onConnect {
+                handleOnConnect(session, "")
+            }
+            
             var fragmentedOpCode = WebSocketSession.OpCode.close
             var payload = [UInt8]() // Used for fragmented frames.
             
@@ -122,6 +128,7 @@ public func websocket(
         guard let secWebSocketAccept = String.toBase64((secWebSocketKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").sha1()) else {
             return HttpResponse.internalServerError
         }
+        
         let headers = ["Upgrade": "WebSocket", "Connection": "Upgrade", "Sec-WebSocket-Accept": secWebSocketAccept]
         return HttpResponse.switchProtocols(headers, protocolSessionClosure)
     }

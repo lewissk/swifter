@@ -175,7 +175,7 @@ public func demoServer(_ publicDir: String) -> HttpServer {
         })
     }
     
-    server["/websocket-echo"] = websocket({ (session, text) in
+    server["/websocket-echo"] = websocket(.none, {(session, text) in
         session.writeText(text)
         }, { (session, binary) in
         session.writeBinary(binary)
