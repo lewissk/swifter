@@ -21,24 +21,24 @@ public enum SocketError: Error {
     case getSockNameFailed(String)
 }
 
+// swiftlint: disable identifier_name
 open class Socket: Hashable, Equatable {
-        
+
     let socketFileDescriptor: Int32
     private var shutdown = false
 
-    
     public init(socketFileDescriptor: Int32) {
         self.socketFileDescriptor = socketFileDescriptor
     }
-    
+
     deinit {
         close()
     }
-    
+
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.socketFileDescriptor)
     }
-    
+
     public func close() {
         if shutdown {
             return
@@ -46,7 +46,7 @@ open class Socket: Hashable, Equatable {
         shutdown = true
         Socket.close(self.socketFileDescriptor)
     }
-    
+
     public func port() throws -> in_port_t {
         var addr = sockaddr_in()
         return try withUnsafePointer(to: &addr) { pointer in
@@ -62,7 +62,7 @@ open class Socket: Hashable, Equatable {
             #endif
         }
     }
-    
+
     public func isIPv4() throws -> Bool {
         var addr = sockaddr_in()
         return try withUnsafePointer(to: &addr) { pointer in
@@ -73,15 +73,15 @@ open class Socket: Hashable, Equatable {
             return Int32(pointer.pointee.sin_family) == AF_INET
         }
     }
-    
+
     public func writeUTF8(_ string: String) throws {
         try writeUInt8(ArraySlice(string.utf8))
     }
-    
+
     public func writeUInt8(_ data: [UInt8]) throws {
         try writeUInt8(ArraySlice(data))
     }
-    
+
     public func writeUInt8(_ data: ArraySlice<UInt8>) throws {
         try data.withUnsafeBufferPointer {
             try writeBuffer($0.baseAddress!, length: data.count)
@@ -91,7 +91,7 @@ open class Socket: Hashable, Equatable {
     public func writeData(_ data: NSData) throws {
         try writeBuffer(data.bytes, length: data.length)
     }
-    
+
     public func writeData(_ data: Data) throws {
         #if compiler(>=5.0)
         try data.withUnsafeBytes { (body: UnsafeRawBufferPointer) -> Void in
@@ -111,17 +111,17 @@ open class Socket: Hashable, Equatable {
         var sent = 0
         while sent < length {
             #if os(Linux)
-                let s = send(self.socketFileDescriptor, pointer + sent, Int(length - sent), Int32(MSG_NOSIGNAL))
+                let result = send(self.socketFileDescriptor, pointer + sent, Int(length - sent), Int32(MSG_NOSIGNAL))
             #else
-                let s = write(self.socketFileDescriptor, pointer + sent, Int(length - sent))
+                let result = write(self.socketFileDescriptor, pointer + sent, Int(length - sent))
             #endif
-            if s <= 0 {
+            if result <= 0 {
                 throw SocketError.writeFailed(Errno.description())
             }
-            sent += s
+            sent += result
         }
     }
-    
+
     /// Read a single byte off the socket. This method is optimized for reading
     /// a single byte. For reading multiple bytes, use read(length:), which will
     /// pre-allocate heap space and read directly into it.
@@ -136,7 +136,7 @@ open class Socket: Hashable, Equatable {
 	    #else
 	    let count = Darwin.read(self.socketFileDescriptor as Int32, &byte, 1)
 	    #endif
-        
+
         guard count > 0 else {
             throw SocketError.recvFailed(Errno.description())
         }
@@ -179,7 +179,7 @@ open class Socket: Hashable, Equatable {
 	        #else
 	        let bytesRead = Darwin.read(self.socketFileDescriptor as Int32, baseAddress + offset, readLength)
 	        #endif
-            
+
             guard bytesRead > 0 else {
                 throw SocketError.recvFailed(Errno.description())
             }
@@ -189,20 +189,20 @@ open class Socket: Hashable, Equatable {
 
         return offset
     }
-    
+
     private static let CR: UInt8 = 13
     private static let NL: UInt8 = 10
-    
+
     public func readLine() throws -> String {
         var characters: String = ""
-        var n: UInt8 = 0
+        var index: UInt8 = 0
         repeat {
-            n = try self.read()
-            if n > Socket.CR { characters.append(Character(UnicodeScalar(n))) }
-        } while n != Socket.NL
+            index = try self.read()
+            if index > Socket.CR { characters.append(Character(UnicodeScalar(index))) }
+        } while index != Socket.NL
         return characters
     }
-    
+
     public func peername() throws -> String {
         var addr = sockaddr(), len: socklen_t = socklen_t(MemoryLayout<sockaddr>.size)
         if getpeername(self.socketFileDescriptor, &addr, &len) != 0 {
@@ -214,7 +214,7 @@ open class Socket: Hashable, Equatable {
         }
         return String(cString: hostBuffer)
     }
-    
+
     public class func setNoSigPipe(_ socket: Int32) {
         #if os(Linux)
             // There is no SO_NOSIGPIPE in Linux (nor some other systems). You can instead use the MSG_NOSIGNAL flag when calling send(),
@@ -225,12 +225,12 @@ open class Socket: Hashable, Equatable {
             setsockopt(socket, SOL_SOCKET, SO_NOSIGPIPE, &no_sig_pipe, socklen_t(MemoryLayout<Int32>.size))
         #endif
     }
-    
+
     public class func close(_ socket: Int32) {
         #if os(Linux)
-            let _ = Glibc.close(socket)
+            _ = Glibc.close(socket)
         #else
-            let _ = Darwin.close(socket)
+            _ = Darwin.close(socket)
         #endif
     }
 }

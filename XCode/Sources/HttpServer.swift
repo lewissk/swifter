@@ -7,12 +7,21 @@
 
 import Foundation
 
-public class HttpServer: HttpServerIO {
-    
-    public static let VERSION = "1.4.6"
-    
+open class HttpServer: HttpServerIO {
+
+    public static let VERSION: String = {
+
+        #if os(Linux)
+        return "1.4.7"
+        #else
+        let bundle = Bundle(for: HttpServer.self)
+        guard let version = bundle.infoDictionary?["CFBundleShortVersionString"] as? String else { return "Unspecified" }
+        return version
+        #endif
+    }()
+
     private let router = HttpRouter()
-    
+
     public override init() {
         self.DELETE  = MethodRoute(method: "DELETE", router: router)
         self.UPDATE  = MethodRoute(method: "UPDATE", router: router)
@@ -22,7 +31,7 @@ public class HttpServer: HttpServerIO {
         self.GET     = MethodRoute(method: "GET", router: router)
         self.PUT     = MethodRoute(method: "PUT", router: router)
         self.OPTIONS = MethodRoute(method: "OPTIONS", router: router)
-        
+
         self.delete  = MethodRoute(method: "DELETE", router: router)
         self.update  = MethodRoute(method: "UPDATE", router: router)
         self.patch   = MethodRoute(method: "PATCH", router: router)
@@ -42,16 +51,16 @@ public class HttpServer: HttpServerIO {
         }
         get { return nil }
     }
-    
-    public var routes: [String] {
-        return router.routes();
-    }
-    
-    public var notFoundHandler: ((HttpRequest) -> HttpResponse)?
-    
-    public var middleware = Array<(HttpRequest) -> HttpResponse?>()
 
-    override public func dispatch(_ request: HttpRequest) -> ([String:String], (HttpRequest) -> HttpResponse) {
+    public var routes: [String] {
+        return router.routes()
+    }
+
+    public var notFoundHandler: ((HttpRequest) -> HttpResponse)?
+
+    public var middleware = [(HttpRequest) -> HttpResponse?]()
+
+    override open func dispatch(_ request: HttpRequest) -> ([String: String], (HttpRequest) -> HttpResponse) {
         for layer in middleware {
             if let response = layer(request) {
                 return ([:], { _ in response })
@@ -65,7 +74,7 @@ public class HttpServer: HttpServerIO {
         }
         return super.dispatch(request)
     }
-    
+
     public struct MethodRoute {
         public let method: String
         public let router: HttpRouter

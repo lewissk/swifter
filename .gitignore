@@ -27,4 +27,5 @@ DerivedData
 
 .build/
 Packages/
+/XCode/.DS_Store
 .DS_Store
