@@ -39,10 +39,10 @@ open class HttpServer: HttpServerIO {
         self.put     = MethodRoute(method: "PUT", router: router)
         self.options = MethodRoute(method: "OPTIONS", router: router)
     }
-    
+
     public var DELETE, PATCH, HEAD, POST, GET, PUT, OPTIONS : MethodRoute
     public var delete, patch, head, post, get, put, options : MethodRoute
-    
+
     public subscript(path: String) -> ((HttpRequest) -> HttpResponse)? {
         set {
             router.register(nil, path: path, handler: newValue)
