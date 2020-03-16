@@ -24,7 +24,6 @@ open class HttpServer: HttpServerIO {
 
     public override init() {
         self.DELETE  = MethodRoute(method: "DELETE", router: router)
-        self.UPDATE  = MethodRoute(method: "UPDATE", router: router)
         self.PATCH   = MethodRoute(method: "PATCH", router: router)
         self.HEAD    = MethodRoute(method: "HEAD", router: router)
         self.POST    = MethodRoute(method: "POST", router: router)
@@ -33,7 +32,6 @@ open class HttpServer: HttpServerIO {
         self.OPTIONS = MethodRoute(method: "OPTIONS", router: router)
 
         self.delete  = MethodRoute(method: "DELETE", router: router)
-        self.update  = MethodRoute(method: "UPDATE", router: router)
         self.patch   = MethodRoute(method: "PATCH", router: router)
         self.head    = MethodRoute(method: "HEAD", router: router)
         self.post    = MethodRoute(method: "POST", router: router)
@@ -42,8 +40,8 @@ open class HttpServer: HttpServerIO {
         self.options = MethodRoute(method: "OPTIONS", router: router)
     }
     
-    public var DELETE, UPDATE, PATCH, HEAD, POST, GET, PUT, OPTIONS : MethodRoute
-    public var delete, update, patch, head, post, get, put, options : MethodRoute
+    public var DELETE, PATCH, HEAD, POST, GET, PUT, OPTIONS : MethodRoute
+    public var delete, patch, head, post, get, put, options : MethodRoute
     
     public subscript(path: String) -> ((HttpRequest) -> HttpResponse)? {
         set {
