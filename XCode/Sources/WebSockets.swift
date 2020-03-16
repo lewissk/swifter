@@ -101,7 +101,7 @@ public func websocket(
                     }
                 case .pong:
                     if let handlePong = pong {
-                        handlePong(session, frame.payload)
+                       handlePong(session, frame.payload)
                     }
                 }
             }
@@ -159,7 +159,7 @@ public class WebSocketSession: Hashable, Equatable {
         public var rsv3: UInt8 = 0
         public var payload = [UInt8]()
     }
-    
+
     public let socket: Socket
 
     public init(_ socket: Socket) {
@@ -174,7 +174,7 @@ public class WebSocketSession: Hashable, Equatable {
     public func writeText(_ text: String) {
         self.writeFrame(ArraySlice(text.utf8), OpCode.text)
     }
-    
+
     public func writeBinary(_ binary: [UInt8]) {
         self.writeBinary(ArraySlice(binary))
     }
@@ -233,7 +233,7 @@ public class WebSocketSession: Hashable, Equatable {
         frm.rsv3 = fst & 0x10
         guard frm.rsv1 == 0 && frm.rsv2 == 0 && frm.rsv3 == 0
             else {
-                throw WsError.protocolError("Reserved frame bit has not been negocitated.")
+            throw WsError.protocolError("Reserved frame bit has not been negocitated.")
         }
         let opc = fst & 0x0F
         guard let opcode = OpCode(rawValue: opc) else {
