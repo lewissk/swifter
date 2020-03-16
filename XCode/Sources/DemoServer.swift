@@ -133,8 +133,7 @@ public func demoServer(_ publicDir: String) -> HttpServer {
             }
         }
     }
-    
-    
+
     server.OPTIONS["/login"] = { r in
         let headers = ["Access-Control-Allow-Origin":"*", "Allow":"POST,OPTIONS"]
         return HttpResponse.raw(200, "OK", headers, { writer in try? writer.write([UInt8]("".utf8))})
@@ -144,7 +143,6 @@ public func demoServer(_ publicDir: String) -> HttpServer {
         let formFields = request.parseUrlencodedForm()
         return HttpResponse.ok(.htmlBody(formFields.map({ "\($0.0) = \($0.1)" }).joined(separator: "<br>")))
     }
-    
 
     server["/demo"] = scopes {
         html {
